@@ -1,0 +1,3 @@
+# STUB — Phase 1
+# This prompt is served by MockLLMAdapter and returns a hardcoded response.
+# Replace with real prompt text when connecting to a real LLM in Phase 2.
