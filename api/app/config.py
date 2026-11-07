@@ -15,13 +15,17 @@ class Settings(BaseSettings):
 
     # Adapter selection
     llm_adapter: str = "mock"
-    source_adapters: str = "mock,github,stackoverflow,duckduckgo"
+    source_adapters: str = "mock,github,stackoverflow,duckduckgo,devto,npm"
     contact_adapter: str = "mock"
     outreach_whatsapp_adapter: str = "mock"
     outreach_email_adapter: str = "mock"
     telephony_adapter: str = "mock"
     interview_adapter: str = "mock"
     embedding_adapter: str = "mock"
+
+    # Google Custom Search (optional; 100 free queries/day, $5/1000 after)
+    google_cse_key: str | None = None
+    google_cse_cx: str | None = None
 
     # Optional API keys (all None in Phase 1)
     github_token: str | None = None

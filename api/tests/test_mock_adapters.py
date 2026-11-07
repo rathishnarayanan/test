@@ -2,6 +2,9 @@
 import pytest
 from app.adapters.base import SearchQuery, Person, OutreachMessage, CallRequest
 from app.adapters.sources.mock import MockSourceAdapter
+from app.adapters.sources.devto import DevToAdapter
+from app.adapters.sources.npm import NpmAdapter
+from app.adapters.sources.google_cse import GoogleCSEAdapter
 from app.adapters.contact.mock import MockContactAdapter
 from app.adapters.llm.mock import MockLLMAdapter
 from app.adapters.outreach.mock import MockOutreachAdapter
@@ -171,3 +174,66 @@ def test_mock_embedding_unit_length():
     result = adapter.embed("test")
     magnitude = math.sqrt(sum(v * v for v in result.vector))
     assert abs(magnitude - 1.0) < 0.001
+
+
+# ── DevTo adapter (interface compliance — no live call in unit tests) ─────────
+
+def test_devto_adapter_is_source_adapter():
+    from app.adapters.base import SourceAdapter
+    assert issubclass(DevToAdapter, SourceAdapter)
+
+
+def test_devto_adapter_instantiates():
+    adapter = DevToAdapter()
+    assert adapter is not None
+
+
+def test_devto_adapter_empty_query_returns_list():
+    import asyncio
+    adapter = DevToAdapter()
+    query = SearchQuery(titles=[], skills_must=[], skills_nice=[], location=None, exclusions=[], limit=5)
+    result = asyncio.get_event_loop().run_until_complete(adapter.search(query))
+    assert isinstance(result, list)
+
+
+# ── npm adapter (interface compliance) ───────────────────────────────────────
+
+def test_npm_adapter_is_source_adapter():
+    from app.adapters.base import SourceAdapter
+    assert issubclass(NpmAdapter, SourceAdapter)
+
+
+def test_npm_adapter_instantiates():
+    adapter = NpmAdapter()
+    assert adapter is not None
+
+
+def test_npm_adapter_empty_query_returns_list():
+    import asyncio
+    adapter = NpmAdapter()
+    query = SearchQuery(titles=[], skills_must=[], skills_nice=[], location=None, exclusions=[], limit=5)
+    result = asyncio.get_event_loop().run_until_complete(adapter.search(query))
+    assert isinstance(result, list)
+
+
+# ── Google CSE adapter (no-key graceful no-op) ───────────────────────────────
+
+def test_google_cse_adapter_is_source_adapter():
+    from app.adapters.base import SourceAdapter
+    assert issubclass(GoogleCSEAdapter, SourceAdapter)
+
+
+def test_google_cse_no_keys_returns_empty():
+    import asyncio
+    adapter = GoogleCSEAdapter()
+    query = SearchQuery(
+        titles=["Software Engineer"],
+        skills_must=["python"],
+        skills_nice=[],
+        location="Bangalore",
+        exclusions=[],
+        limit=10,
+    )
+    # Without GOOGLE_CSE_KEY / GOOGLE_CSE_CX in env, must return [] silently
+    result = asyncio.get_event_loop().run_until_complete(adapter.search(query))
+    assert result == []

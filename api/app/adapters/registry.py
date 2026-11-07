@@ -3,7 +3,7 @@ from app.adapters.base import (
     SourceAdapter, ContactAdapter, LLMAdapter,
     OutreachAdapter, TelephonyAdapter, EmbeddingAdapter,
 )
-from app.adapters.sources import MockSourceAdapter, GitHubAdapter, StackOverflowAdapter, DuckDuckGoAdapter
+from app.adapters.sources import MockSourceAdapter, GitHubAdapter, StackOverflowAdapter, DuckDuckGoAdapter, DevToAdapter, NpmAdapter, GoogleCSEAdapter
 from app.adapters.contact import MockContactAdapter
 from app.adapters.llm import MockLLMAdapter
 from app.adapters.outreach import MockOutreachAdapter
@@ -17,6 +17,9 @@ _SOURCE_MAP: dict[str, type[SourceAdapter]] = {
     "github": GitHubAdapter,
     "stackoverflow": StackOverflowAdapter,
     "duckduckgo": DuckDuckGoAdapter,
+    "devto": DevToAdapter,
+    "npm": NpmAdapter,
+    "google_cse": GoogleCSEAdapter,
 }
 
 
