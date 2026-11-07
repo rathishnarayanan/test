@@ -15,8 +15,10 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.execute("CREATE EXTENSION IF NOT EXISTS vector")
-    op.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
+    # Extensions (pgcrypto, vector) must be created by a superuser before running this migration:
+    #   sudo -u postgres psql -d sourcing -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+    #   sudo -u postgres psql -d sourcing -c "CREATE EXTENSION IF NOT EXISTS vector;"  # if pgvector installed
+
 
     op.create_table(
         "workspaces",
