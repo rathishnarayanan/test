@@ -12,10 +12,13 @@ from app.models.candidate import Candidate
 from app.models.score import Score
 from app.models.label import Label
 from app.models.outreach import OutreachEvent
-from app.models.compliance import AuditLog
+from app.models.compliance import AuditLog, SuppressionList
 from app.services.calibration import (
     get_calibration_batch, compute_yes_rate, rerank_candidates, check_cold_start
 )
+from app.services.suppression import _hash, is_suppressed
+from app.adapters.registry import registry
+from app.adapters.base import Person
 
 router = APIRouter(prefix="/api/jobs/{role_id}", tags=["candidates"])
 
@@ -219,6 +222,88 @@ async def trigger_outreach(role_id: str, candidate_id: str, db: AsyncSession = D
     from app.workers.tasks import send_outreach
     send_outreach.delay(candidate_id, role_id, str(DEMO_WORKSPACE_ID), "whatsapp")
     return {"status": "outreach_queued", "channel": "whatsapp"}
+
+
+@router.post("/candidates/{candidate_id}/reveal")
+async def reveal_contact(role_id: str, candidate_id: str, db: AsyncSession = Depends(get_db)):
+    """Reveal contact details — writes audit log entry."""
+    stmt = select(Candidate).where(
+        Candidate.id == uuid.UUID(candidate_id),
+        Candidate.workspace_id == DEMO_WORKSPACE_ID,
+    )
+    result = await db.execute(stmt)
+    candidate = result.scalar_one_or_none()
+    if not candidate:
+        raise HTTPException(404, "Candidate not found")
+    if candidate.suppressed:
+        raise HTTPException(403, "Candidate is suppressed")
+
+    person = Person(
+        full_name=candidate.full_name,
+        current_employer=candidate.current_employer,
+        location=candidate.location,
+        profile_urls=candidate.profile_urls or {},
+    )
+    contact_result = await registry.get_contact_adapter().find_contact(person)
+
+    email = contact_result.emails[0]["value"] if contact_result.emails else None
+    phone = contact_result.phones[0]["value"] if contact_result.phones else None
+
+    if email:
+        candidate.email_revealed = email
+    if phone:
+        candidate.phone_revealed = phone
+
+    audit = AuditLog(
+        workspace_id=DEMO_WORKSPACE_ID,
+        user_id=DEMO_USER_ID,
+        action="contact_revealed",
+        entity_type="candidate",
+        entity_id=uuid.UUID(candidate_id),
+        detail={"channel": "email+phone", "source": contact_result.adapter_name, "role_id": role_id},
+    )
+    db.add(audit)
+    await db.commit()
+
+    return {"email": email, "phone": phone, "revealed": True}
+
+
+@router.post("/candidates/{candidate_id}/suppress")
+async def suppress_candidate(role_id: str, candidate_id: str, db: AsyncSession = Depends(get_db)):
+    """Suppress a candidate — adds to suppression list and writes audit log."""
+    stmt = select(Candidate).where(
+        Candidate.id == uuid.UUID(candidate_id),
+        Candidate.workspace_id == DEMO_WORKSPACE_ID,
+    )
+    result = await db.execute(stmt)
+    candidate = result.scalar_one_or_none()
+    if not candidate:
+        raise HTTPException(404, "Candidate not found")
+
+    candidate.suppressed = True
+
+    email = candidate.email_revealed or candidate.email_masked
+    phone = candidate.phone_revealed or candidate.phone_masked
+    if email or phone:
+        entry = SuppressionList(
+            workspace_id=DEMO_WORKSPACE_ID,
+            email_hash=_hash(email),
+            phone_hash=_hash(phone),
+            reason="manual",
+        )
+        db.add(entry)
+
+    audit = AuditLog(
+        workspace_id=DEMO_WORKSPACE_ID,
+        user_id=DEMO_USER_ID,
+        action="candidate_suppressed",
+        entity_type="candidate",
+        entity_id=uuid.UUID(candidate_id),
+        detail={"role_id": role_id},
+    )
+    db.add(audit)
+    await db.commit()
+    return {"suppressed": True}
 
 
 @router.post("/candidates/{candidate_id}/move-to-interview")

@@ -1,26 +1,12 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { useParams, usePathname } from "next/navigation";
-import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
-  api, type CandidateRow, type ScoreDetail, type Job,
+  api, type CandidateRow, type ScoreDetail, type RevealResult,
 } from "@/lib/api";
 import {
-  Briefcase, Settings, Users, BarChart2, Zap,
-  MessageSquare, GitBranch, BookOpen, FileText,
   X, Download, ChevronLeft, ChevronRight, ExternalLink,
 } from "lucide-react";
-
-const NAV = [
-  { label: "Setup", icon: Settings, href: "" },
-  { label: "Candidates", icon: Users, href: "/candidates" },
-  { label: "Calibration", icon: Zap, href: "/calibration" },
-  { label: "Dashboard", icon: BarChart2, href: "/rules" },
-  { label: "Outreach", icon: MessageSquare, href: "/outreach" },
-  { label: "Pipeline", icon: GitBranch, href: "/pipeline" },
-  { label: "Learned", icon: BookOpen, href: "/preferences" },
-  { label: "Audit", icon: FileText, href: "/audit" },
-];
 
 const REASON_TAGS = [
   "wrong_seniority", "wrong_domain", "location_mismatch",
@@ -35,8 +21,6 @@ function scoreColor(s: number) {
 
 export default function CandidatesPage() {
   const { id } = useParams<{ id: string }>();
-  const pathname = usePathname();
-  const [job, setJob] = useState<Job | null>(null);
   const [candidates, setCandidates] = useState<CandidateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -46,10 +30,8 @@ export default function CandidatesPage() {
   const [scoreDetail, setScoreDetail] = useState<ScoreDetail | null>(null);
   const [scoreLoading, setScoreLoading] = useState(false);
   const [actionMsg, setActionMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    api.getJob(id).then(setJob).catch(() => {});
-  }, [id]);
+  const [revealed, setRevealed] = useState<RevealResult | null>(null);
+  const [suppressConfirm, setSuppressConfirm] = useState(false);
 
   const loadCandidates = useCallback(() => {
     setLoading(true);
@@ -65,6 +47,8 @@ export default function CandidatesPage() {
     setSelected(c);
     setScoreDetail(null);
     setActionMsg(null);
+    setRevealed(null);
+    setSuppressConfirm(false);
     setScoreLoading(true);
     try {
       const d = await api.getScore(id, c.id);
@@ -96,39 +80,35 @@ export default function CandidatesPage() {
     }
   }
 
+  async function handleReveal() {
+    if (!selected) return;
+    try {
+      const result = await api.revealContact(id, selected.id);
+      setRevealed(result);
+      setActionMsg(null);
+    } catch (e) {
+      setActionMsg(String(e));
+    }
+  }
+
+  async function handleSuppress() {
+    if (!selected) return;
+    try {
+      await api.suppressCandidate(id, selected.id);
+      setSelected(null);
+      setSuppressConfirm(false);
+      loadCandidates();
+    } catch (e) {
+      setActionMsg(String(e));
+    }
+  }
+
   const filtered = candidates.filter((c) =>
     c.full_name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-10">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-6">
-        <Briefcase size={18} className="text-teal-DEFAULT" />
-        <h1 className="text-xl font-semibold">{job?.title ?? id}</h1>
-      </div>
-
-      {/* Nav */}
-      <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
-        {NAV.map(({ label, icon: Icon, href }) => {
-          const active = pathname === `/jobs/${id}${href}`;
-          return (
-            <Link
-              key={label}
-              href={`/jobs/${id}${href}`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors whitespace-nowrap ${
-                active
-                  ? "bg-slate-800 text-teal-light"
-                  : "text-slate-300 hover:text-teal-light hover:bg-slate-800"
-              }`}
-            >
-              <Icon size={14} />
-              {label}
-            </Link>
-          );
-        })}
-      </div>
-
+    <main className="max-w-7xl mx-auto px-6 pb-10">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <input
@@ -292,7 +272,50 @@ export default function CandidatesPage() {
               </div>
             )}
 
+            {/* Reveal contact */}
+            {!revealed ? (
+              <button
+                onClick={handleReveal}
+                className="w-full py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-200 transition-colors"
+              >
+                Reveal Contact
+              </button>
+            ) : (
+              <div className="rounded bg-slate-800 px-3 py-2 text-xs space-y-1">
+                {revealed.email && <p className="text-slate-200 font-mono">{revealed.email}</p>}
+                {revealed.phone && <p className="text-slate-200 font-mono">{revealed.phone}</p>}
+                {!revealed.email && !revealed.phone && <p className="text-slate-400">No contact info available</p>}
+              </div>
+            )}
+
             {actionMsg && <p className="text-xs text-teal-light">{actionMsg}</p>}
+
+            {suppressConfirm ? (
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">Suppress this candidate? They will never appear again.</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSuppress}
+                    className="flex-1 py-1.5 rounded bg-rose-700 hover:bg-rose-600 text-white text-xs transition-colors"
+                  >
+                    Yes, suppress
+                  </button>
+                  <button
+                    onClick={() => setSuppressConfirm(false)}
+                    className="flex-1 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setSuppressConfirm(true)}
+                className="w-full py-2 rounded bg-slate-800 hover:bg-slate-700 text-sm text-slate-400 transition-colors"
+              >
+                Suppress Candidate
+              </button>
+            )}
           </div>
 
           <div className="px-5 py-4 border-t border-slate-800 space-y-2">

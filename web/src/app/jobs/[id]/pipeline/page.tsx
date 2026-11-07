@@ -1,23 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
-import Link from "next/link";
-import { api, type CandidateRow, type Job } from "@/lib/api";
-import {
-  Briefcase, Settings, Users, BarChart2, Zap,
-  MessageSquare, GitBranch, BookOpen, FileText, Info,
-} from "lucide-react";
-
-const NAV = [
-  { label: "Setup", icon: Settings, href: "" },
-  { label: "Candidates", icon: Users, href: "/candidates" },
-  { label: "Calibration", icon: Zap, href: "/calibration" },
-  { label: "Dashboard", icon: BarChart2, href: "/rules" },
-  { label: "Outreach", icon: MessageSquare, href: "/outreach" },
-  { label: "Pipeline", icon: GitBranch, href: "/pipeline" },
-  { label: "Learned", icon: BookOpen, href: "/preferences" },
-  { label: "Audit", icon: FileText, href: "/audit" },
-];
+import { useParams } from "next/navigation";
+import { api, type CandidateRow } from "@/lib/api";
+import { Info } from "lucide-react";
 
 const COLUMNS = [
   { key: "shortlisted", label: "Shortlisted", color: "text-teal-light" },
@@ -36,12 +21,9 @@ function scoreColor(s: number) {
 
 export default function PipelinePage() {
   const { id } = useParams<{ id: string }>();
-  const pathname = usePathname();
-  const [job, setJob] = useState<Job | null>(null);
   const [candidates, setCandidates] = useState<CandidateRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { api.getJob(id).then(setJob).catch(() => {}); }, [id]);
   useEffect(() => {
     api.listCandidates(id)
       .then(setCandidates)
@@ -59,27 +41,7 @@ export default function PipelinePage() {
   };
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-10">
-      <div className="flex items-center gap-2 mb-6">
-        <Briefcase size={18} className="text-teal-DEFAULT" />
-        <h1 className="text-xl font-semibold">{job?.title ?? id}</h1>
-      </div>
-
-      <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
-        {NAV.map(({ label, icon: Icon, href }) => {
-          const active = pathname === `/jobs/${id}${href}`;
-          return (
-            <Link key={label} href={`/jobs/${id}${href}`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors whitespace-nowrap ${
-                active ? "bg-slate-800 text-teal-light" : "text-slate-300 hover:text-teal-light hover:bg-slate-800"
-              }`}
-            >
-              <Icon size={14} />{label}
-            </Link>
-          );
-        })}
-      </div>
-
+    <main className="max-w-7xl mx-auto px-6 pb-10">
       {loading && <p className="text-slate-400">Loading…</p>}
 
       {!loading && (

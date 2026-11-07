@@ -1,24 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
-import Link from "next/link";
-import { api, type CandidateRow, type OutreachEvent, type Job } from "@/lib/api";
+import { useParams } from "next/navigation";
+import { api, type CandidateRow, type OutreachEvent } from "@/lib/api";
 import {
-  Briefcase, Settings, Users, BarChart2, Zap,
-  MessageSquare, GitBranch, BookOpen, FileText,
+  MessageSquare,
   Phone, Mail, CheckCircle, ArrowUpRight, ArrowDownLeft,
 } from "lucide-react";
-
-const NAV = [
-  { label: "Setup", icon: Settings, href: "" },
-  { label: "Candidates", icon: Users, href: "/candidates" },
-  { label: "Calibration", icon: Zap, href: "/calibration" },
-  { label: "Dashboard", icon: BarChart2, href: "/rules" },
-  { label: "Outreach", icon: MessageSquare, href: "/outreach" },
-  { label: "Pipeline", icon: GitBranch, href: "/pipeline" },
-  { label: "Learned", icon: BookOpen, href: "/preferences" },
-  { label: "Audit", icon: FileText, href: "/audit" },
-];
 
 function eventIcon(type: string) {
   if (type.includes("phone") || type.includes("call")) return <Phone size={14} />;
@@ -34,14 +21,11 @@ function formatDate(iso: string) {
 
 export default function OutreachPage() {
   const { id } = useParams<{ id: string }>();
-  const pathname = usePathname();
-  const [job, setJob] = useState<Job | null>(null);
   const [candidates, setCandidates] = useState<CandidateRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [timeline, setTimeline] = useState<OutreachEvent[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
 
-  useEffect(() => { api.getJob(id).then(setJob).catch(() => {}); }, [id]);
   useEffect(() => { api.listCandidates(id).then(setCandidates).catch(console.error); }, [id]);
 
   async function selectCandidate(cid: string) {
@@ -61,27 +45,7 @@ export default function OutreachPage() {
   const selectedCandidate = candidates.find((c) => c.id === selectedId);
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-10">
-      <div className="flex items-center gap-2 mb-6">
-        <Briefcase size={18} className="text-teal-DEFAULT" />
-        <h1 className="text-xl font-semibold">{job?.title ?? id}</h1>
-      </div>
-
-      <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
-        {NAV.map(({ label, icon: Icon, href }) => {
-          const active = pathname === `/jobs/${id}${href}`;
-          return (
-            <Link key={label} href={`/jobs/${id}${href}`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors whitespace-nowrap ${
-                active ? "bg-slate-800 text-teal-light" : "text-slate-300 hover:text-teal-light hover:bg-slate-800"
-              }`}
-            >
-              <Icon size={14} />{label}
-            </Link>
-          );
-        })}
-      </div>
-
+    <main className="max-w-5xl mx-auto px-6 pb-10">
       <div className="flex gap-5 h-[600px]">
         {/* Sidebar */}
         <div className="w-56 shrink-0 surface overflow-y-auto">

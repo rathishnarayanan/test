@@ -1,26 +1,12 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { useParams, usePathname } from "next/navigation";
-import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
-  api, type CalibrationBatch, type CalibrationCard, type Job,
+  api, type CalibrationBatch, type CalibrationCard,
 } from "@/lib/api";
 import {
-  Briefcase, Settings, Users, BarChart2, Zap,
-  MessageSquare, GitBranch, BookOpen, FileText,
   AlertTriangle, CheckCircle, XCircle, HelpCircle,
 } from "lucide-react";
-
-const NAV = [
-  { label: "Setup", icon: Settings, href: "" },
-  { label: "Candidates", icon: Users, href: "/candidates" },
-  { label: "Calibration", icon: Zap, href: "/calibration" },
-  { label: "Dashboard", icon: BarChart2, href: "/rules" },
-  { label: "Outreach", icon: MessageSquare, href: "/outreach" },
-  { label: "Pipeline", icon: GitBranch, href: "/pipeline" },
-  { label: "Learned", icon: BookOpen, href: "/preferences" },
-  { label: "Audit", icon: FileText, href: "/audit" },
-];
 
 const REASON_TAGS = [
   "wrong_seniority", "wrong_domain", "location_mismatch",
@@ -29,8 +15,6 @@ const REASON_TAGS = [
 
 export default function CalibrationPage() {
   const { id } = useParams<{ id: string }>();
-  const pathname = usePathname();
-  const [job, setJob] = useState<Job | null>(null);
   const [batch, setBatch] = useState<CalibrationBatch | null>(null);
   const [batchNumber, setBatchNumber] = useState(1);
   const [cardIndex, setCardIndex] = useState(0);
@@ -39,8 +23,6 @@ export default function CalibrationPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [reranking, setReranking] = useState(false);
-
-  useEffect(() => { api.getJob(id).then(setJob).catch(() => {}); }, [id]);
 
   const loadBatch = useCallback(() => {
     setLoading(true);
@@ -123,27 +105,7 @@ export default function CalibrationPage() {
   const batchDone = batch && cardIndex >= batch.batch.length;
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-10">
-      <div className="flex items-center gap-2 mb-6">
-        <Briefcase size={18} className="text-teal-DEFAULT" />
-        <h1 className="text-xl font-semibold">{job?.title ?? id}</h1>
-      </div>
-
-      <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
-        {NAV.map(({ label, icon: Icon, href }) => {
-          const active = pathname === `/jobs/${id}${href}`;
-          return (
-            <Link key={label} href={`/jobs/${id}${href}`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors whitespace-nowrap ${
-                active ? "bg-slate-800 text-teal-light" : "text-slate-300 hover:text-teal-light hover:bg-slate-800"
-              }`}
-            >
-              <Icon size={14} />{label}
-            </Link>
-          );
-        })}
-      </div>
-
+    <main className="max-w-5xl mx-auto px-6 pb-10">
       {/* Yes-rate bar */}
       <div className="mb-6">
         <div className="flex justify-between text-xs text-slate-400 mb-1">

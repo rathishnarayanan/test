@@ -1,24 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
-import Link from "next/link";
-import { api, type AuditEntry, type Job } from "@/lib/api";
+import { useParams } from "next/navigation";
+import { api, type AuditEntry } from "@/lib/api";
 import {
-  Briefcase, Settings, Users, BarChart2, Zap,
-  MessageSquare, GitBranch, BookOpen, FileText,
+  FileText,
   ChevronLeft, ChevronRight, ChevronDown, ChevronUp,
 } from "lucide-react";
-
-const NAV = [
-  { label: "Setup", icon: Settings, href: "" },
-  { label: "Candidates", icon: Users, href: "/candidates" },
-  { label: "Calibration", icon: Zap, href: "/calibration" },
-  { label: "Dashboard", icon: BarChart2, href: "/rules" },
-  { label: "Outreach", icon: MessageSquare, href: "/outreach" },
-  { label: "Pipeline", icon: GitBranch, href: "/pipeline" },
-  { label: "Learned", icon: BookOpen, href: "/preferences" },
-  { label: "Audit", icon: FileText, href: "/audit" },
-];
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("en-GB", {
@@ -34,14 +21,10 @@ function truncateId(id: string | null) {
 
 export default function AuditPage() {
   const { id } = useParams<{ id: string }>();
-  const pathname = usePathname();
-  const [job, setJob] = useState<Job | null>(null);
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
-
-  useEffect(() => { api.getJob(id).then(setJob).catch(() => {}); }, [id]);
 
   useEffect(() => {
     setLoading(true);
@@ -52,27 +35,7 @@ export default function AuditPage() {
   }, [page]);
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-10">
-      <div className="flex items-center gap-2 mb-6">
-        <Briefcase size={18} className="text-teal-DEFAULT" />
-        <h1 className="text-xl font-semibold">{job?.title ?? id}</h1>
-      </div>
-
-      <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
-        {NAV.map(({ label, icon: Icon, href }) => {
-          const active = pathname === `/jobs/${id}${href}`;
-          return (
-            <Link key={label} href={`/jobs/${id}${href}`}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors whitespace-nowrap ${
-                active ? "bg-slate-800 text-teal-light" : "text-slate-300 hover:text-teal-light hover:bg-slate-800"
-              }`}
-            >
-              <Icon size={14} />{label}
-            </Link>
-          );
-        })}
-      </div>
-
+    <main className="max-w-5xl mx-auto px-6 pb-10">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-semibold text-slate-200">Audit Log</h2>
         <div className="flex items-center gap-2">

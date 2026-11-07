@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, type Job } from "@/lib/api";
-import { Briefcase, Plus, ChevronRight } from "lucide-react";
+import { Briefcase, Plus, ChevronRight, Settings } from "lucide-react";
 
 const STATUS_COLOR: Record<string, string> = {
   draft: "text-slate-400",
@@ -28,13 +28,22 @@ export default function Home() {
           <Briefcase className="text-teal-DEFAULT" size={24} />
           <h1 className="text-xl font-semibold text-slate-100">Automatic Sourcing</h1>
         </div>
-        <Link
-          href="/jobs/new"
-          className="flex items-center gap-2 px-4 py-2 rounded-md bg-teal-DEFAULT hover:bg-teal-dark text-white text-sm font-medium transition-colors"
-        >
-          <Plus size={16} />
-          New Role
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/settings"
+            className="p-2 rounded-md hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+            title="Settings"
+          >
+            <Settings size={18} />
+          </Link>
+          <Link
+            href="/jobs/new"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-teal-DEFAULT hover:bg-teal-dark text-white text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            New Role
+          </Link>
+        </div>
       </div>
 
       {loading && <p className="text-slate-400 text-sm">Loading roles…</p>}

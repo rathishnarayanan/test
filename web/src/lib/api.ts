@@ -39,6 +39,10 @@ export const api = {
     request(`/api/jobs/${roleId}/candidates/${candidateId}/move-to-interview`, { method: "POST", body: "{}" }),
   getTimeline: (roleId: string, candidateId: string) =>
     request<OutreachEvent[]>(`/api/jobs/${roleId}/candidates/${candidateId}/timeline`),
+  revealContact: (roleId: string, candidateId: string) =>
+    request<RevealResult>(`/api/jobs/${roleId}/candidates/${candidateId}/reveal`, { method: "POST", body: "{}" }),
+  suppressCandidate: (roleId: string, candidateId: string) =>
+    request<{ suppressed: boolean }>(`/api/jobs/${roleId}/candidates/${candidateId}/suppress`, { method: "POST", body: "{}" }),
 
   // Calibration
   getCalibrationBatch: (roleId: string, batchNumber = 1) =>
@@ -66,6 +70,11 @@ export const api = {
 
   // Audit
   listAuditLog: (page = 1) => request<AuditEntry[]>(`/api/audit?page=${page}`),
+
+  // Settings
+  getSettings: () => request<WorkspaceSettings>("/api/settings"),
+  updateSettings: (body: Partial<WorkspaceSettings>) =>
+    request<WorkspaceSettings>("/api/settings", { method: "PUT", body: JSON.stringify(body) }),
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -192,4 +201,16 @@ export interface AuditEntry {
   entity_id: string | null;
   detail: Record<string, unknown>;
   created_at: string;
+}
+
+export interface RevealResult {
+  email: string | null;
+  phone: string | null;
+  revealed: boolean;
+}
+
+export interface WorkspaceSettings {
+  retention_days: number;
+  contact_reveal_enabled: boolean;
+  source_adapters: string[];
 }

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import jobs, candidates, rules, preferences, audit
+from app.routers import jobs, candidates, rules, preferences, audit, settings
 
 app = FastAPI(title="Automatic Sourcing API", version="0.1.0")
 
@@ -17,6 +17,7 @@ app.include_router(candidates.router)
 app.include_router(rules.router)
 app.include_router(preferences.router)
 app.include_router(audit.router)
+app.include_router(settings.router)
 
 
 @app.get("/health")

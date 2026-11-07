@@ -1,23 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { api, type Job, type SearchSpec } from "@/lib/api";
-import {
-  Briefcase, Settings, Users, BarChart2, Zap,
-  MessageSquare, GitBranch, BookOpen, FileText, ChevronRight
-} from "lucide-react";
-
-const NAV = [
-  { label: "Setup", icon: Settings, href: "" },
-  { label: "Candidates", icon: Users, href: "/candidates" },
-  { label: "Calibration", icon: Zap, href: "/calibration" },
-  { label: "Dashboard", icon: BarChart2, href: "/rules" },
-  { label: "Outreach", icon: MessageSquare, href: "/outreach" },
-  { label: "Pipeline", icon: GitBranch, href: "/pipeline" },
-  { label: "Learned", icon: BookOpen, href: "/preferences" },
-  { label: "Audit", icon: FileText, href: "/audit" },
-];
 
 export default function JobPage() {
   const { id } = useParams<{ id: string }>();
@@ -63,31 +47,8 @@ export default function JobPage() {
   if (!job) return <p className="text-slate-400 p-10">Loading…</p>;
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-10">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Briefcase size={18} className="text-teal-DEFAULT" />
-            <h1 className="text-xl font-semibold">{job.title}</h1>
-          </div>
-          <span className="font-mono text-xs text-slate-400">{job.status}</span>
-        </div>
-      </div>
-
-      {/* Nav */}
-      <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
-        {NAV.map(({ label, icon: Icon, href }) => (
-          <Link
-            key={label}
-            href={`/jobs/${id}${href}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-sm text-slate-300 hover:text-teal-light hover:bg-slate-800 transition-colors whitespace-nowrap"
-          >
-            <Icon size={14} />
-            {label}
-          </Link>
-        ))}
-      </div>
+    <main className="max-w-5xl mx-auto px-6 pb-10">
+      <p className="text-xs font-mono text-slate-400 mb-5">{job.status}</p>
 
       {/* Setup card */}
       <div className="space-y-5">
