@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: theme('colors.slate.950');
+  --surface: theme('colors.slate.900');
+  --border: theme('colors.slate.800');
+  --text: theme('colors.slate.100');
+  --text-muted: theme('colors.slate.400');
+  --accent: theme('colors.teal.DEFAULT');
+  --accent-light: theme('colors.teal.light');
+  --warn: theme('colors.amber.DEFAULT');
+  --danger: theme('colors.rose.DEFAULT');
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+  .surface {
+    background-color: theme('colors.slate.900');
+    border: 1px solid theme('colors.slate.800');
+    border-radius: 12px;
+  }
+
+  .surface-elevated {
+    background-color: theme('colors.slate.850');
+    border: 1px solid theme('colors.slate.700');
+    border-radius: 12px;
+  }
+
+  .score-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .score-high { color: theme('colors.teal.light'); }
+  .score-mid { color: theme('colors.amber.DEFAULT'); }
+  .score-low { color: theme('colors.rose.DEFAULT'); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
