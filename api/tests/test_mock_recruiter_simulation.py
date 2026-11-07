@@ -20,6 +20,7 @@ TARGET = {
 
 def _build_scores(search_spec, rubric):
     """Source candidates, resolve, and score them."""
+    import asyncio
     query = SearchQuery(
         titles=search_spec["titles"],
         skills_must=search_spec["skills_must"],
@@ -28,7 +29,7 @@ def _build_scores(search_spec, rubric):
         exclusions=search_spec.get("exclusions", []),
         limit=50,
     )
-    profiles = MockSourceAdapter().search(query)
+    profiles = asyncio.run(MockSourceAdapter().search(query))
     resolved = resolve_profiles(profiles)
 
     scored = []
@@ -122,8 +123,9 @@ def test_sourcing_deduplication(search_spec):
         exclusions=[],
         limit=50,
     )
-    profiles_1 = MockSourceAdapter().search(query)
-    profiles_2 = MockSourceAdapter().search(query)
+    import asyncio
+    profiles_1 = asyncio.run(MockSourceAdapter().search(query))
+    profiles_2 = asyncio.run(MockSourceAdapter().search(query))
     combined = profiles_1 + profiles_2
 
     resolved = resolve_profiles(combined)
