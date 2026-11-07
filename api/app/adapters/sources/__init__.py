@@ -5,8 +5,9 @@ from app.adapters.sources.duckduckgo import DuckDuckGoAdapter
 from app.adapters.sources.devto import DevToAdapter
 from app.adapters.sources.npm import NpmAdapter
 from app.adapters.sources.google_cse import GoogleCSEAdapter
+from app.adapters.sources.juicebox import JuiceboxAdapter
 
 __all__ = [
     "MockSourceAdapter", "GitHubAdapter", "StackOverflowAdapter", "DuckDuckGoAdapter",
-    "DevToAdapter", "NpmAdapter", "GoogleCSEAdapter",
+    "DevToAdapter", "NpmAdapter", "GoogleCSEAdapter", "JuiceboxAdapter",
 ]

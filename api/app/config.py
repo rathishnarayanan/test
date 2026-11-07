@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     # Adapter selection
     llm_adapter: str = "mock"
     source_adapters: str = "mock,github,stackoverflow,duckduckgo,devto,npm"
-    contact_adapter: str = "mock"
+    contact_adapter: str = "mock"  # mock | juicebox | auto (auto picks juicebox when key present)
     outreach_whatsapp_adapter: str = "mock"
     outreach_email_adapter: str = "mock"
     telephony_adapter: str = "mock"

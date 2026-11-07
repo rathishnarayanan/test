@@ -3,8 +3,9 @@ from app.adapters.base import (
     SourceAdapter, ContactAdapter, LLMAdapter,
     OutreachAdapter, TelephonyAdapter, EmbeddingAdapter,
 )
-from app.adapters.sources import MockSourceAdapter, GitHubAdapter, StackOverflowAdapter, DuckDuckGoAdapter, DevToAdapter, NpmAdapter, GoogleCSEAdapter
+from app.adapters.sources import MockSourceAdapter, GitHubAdapter, StackOverflowAdapter, DuckDuckGoAdapter, DevToAdapter, NpmAdapter, GoogleCSEAdapter, JuiceboxAdapter
 from app.adapters.contact import MockContactAdapter
+from app.adapters.contact.juicebox import JuiceboxContactAdapter
 from app.adapters.llm import MockLLMAdapter
 from app.adapters.outreach import MockOutreachAdapter
 from app.adapters.telephony import MockTelephonyAdapter
@@ -20,6 +21,7 @@ _SOURCE_MAP: dict[str, type[SourceAdapter]] = {
     "devto": DevToAdapter,
     "npm": NpmAdapter,
     "google_cse": GoogleCSEAdapter,
+    "juicebox": JuiceboxAdapter,
 }
 
 
@@ -33,8 +35,10 @@ class AdapterRegistry:
         return adapters or [MockSourceAdapter()]
 
     def get_contact_adapter(self) -> ContactAdapter:
-        if settings.contact_adapter == "mock":
-            return MockContactAdapter()
+        if settings.contact_adapter == "juicebox" or (
+            settings.contact_adapter == "auto" and settings.juicebox_api_key
+        ):
+            return JuiceboxContactAdapter()
         return MockContactAdapter()
 
     def get_llm_adapter(self) -> LLMAdapter:
